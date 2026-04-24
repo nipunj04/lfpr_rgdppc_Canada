@@ -39,7 +39,6 @@ A 1 percentage point increase in labour force participation is associated with a
 .
 ├── Impact_of_LFPR_on_RGGDPPC_Canada.pdf   # Final research paper
 ├── ECO475_term_paper.do                   # Stata code
-├── ECO475_term_paper.log                  # Regression output
 └── README.md                              # Project description
 ```
 
