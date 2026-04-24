@@ -1,0 +1,376 @@
+----------------------------------------------------------------------------------------------------
+      name:  ECO475_TERM_PAPER
+       log:  C:\Users\jaiswa40\Downloads\ECO475_term_paper.log
+  log type:  text
+ opened on:   4 Apr 2026, 16:49:55
+
+. 
+. 
+. *Setup:
+. clear all
+
+. set more off
+
+. 
+. 
+. ******************************************************
+. * STEP 1: IMPORT DATA AND DECLARE IT AS TIME SERIES
+. ******************************************************
+. *Import data:
+. cd "C:\Users\jaiswa40\Downloads" //CHANGE THIS TO YOUR DIRECTORY
+C:\Users\jaiswa40\Downloads
+
+. insheet using LFRGDP_ECO475_term_paper_data.csv, comma clear
+(4 vars, 120 obs)
+
+. browse
+
+. rename RGDPPC rgdppc
+
+. 
+. *labeling the variables
+. label variable rgdppc "Real GDP Per Capita (Chained 2017 dollars)"
+
+. label variable lfpr "Labor Force Participation Rate"
+
+. label variable inv "Investment in Inventories (x1,000,000) (Chained 2017 dollars)"
+
+. label variable prd "Labor Productivity (in business sector) (Index 2017 = 100)"
+
+. 
+. *Declaring dataset as time series
+. gen t = 12*11 + 7 + _n
+
+. tsset t, quarter
+        time variable:  t, 1995q1 to 2024q4
+                delta:  1 quarter
+
+. label variable t "Time"
+
+. sum rgdppc lfpr inv prd
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+      rgdppc |        120    54204.35    5019.579      43050      61020
+        lfpr |        120    66.16722     .971152         62       67.7
+         inv |        120    9143.608    12486.45     -29778      55297
+         prd |        120    93.13624     8.68599     75.408    115.319
+
+. 
+. ******************************************************
+. * STEP 2: PLOTS AND VISUAL EVIDENCE ON NONSTATIONARITY
+. ******************************************************
+. * Plot Real GDP Per Capita in levels
+. tsline rgdppc, ///
+>     title("RGDP Per Capita in Levels") ///
+>     ytitle("RGDP Per Capita") ///
+>     xtitle("Time")
+
+. graph export "RGDP PC_levels.png", replace width(2000)
+(file RGDP PC_levels.png written in PNG format)
+
+. 
+. * Plot Labor Force Participation Rate in levels
+. tsline lfpr, ///
+>     title("LFPR in Levels") ///
+>     ytitle("LFPR") ///
+>     xtitle("Time")
+
+. graph export "LFPR_levels.png", replace width(2000)
+(file LFPR_levels.png written in PNG format)
+
+. 
+. * Plot Labor Investment in Inventories in levels
+. tsline inv, ///
+>     title("Investment in Inventories in Levels") ///
+>     ytitle("Investment in Inventories") ///
+>     xtitle("Time")
+
+. graph export "INV_levels.png", replace width(2000)
+(file INV_levels.png written in PNG format)
+
+. 
+. * Plot Labor Productivity in levels
+. tsline prd, ///
+>     title("Labor Productivity") ///
+>     ytitle("Labor Productivity") ///
+>     xtitle("Time")
+
+. graph export "PRD_levels.png", replace width(2000)
+(file PRD_levels.png written in PNG format)
+
+. 
+. /*
+> tsline rgdppc
+> tsline lfpr
+> tsline inv
+> tsline prd
+> */
+. 
+. ******************************************************
+. * STEP 3: UNIT ROOT TESTS
+. ******************************************************
+. *ADF test in levels including trend
+. dfuller rgdppc, lags(4) trend
+
+Augmented Dickey-Fuller test for unit root         Number of obs   =       115
+
+                               ---------- Interpolated Dickey-Fuller ---------
+                  Test         1% Critical       5% Critical      10% Critical
+               Statistic           Value             Value             Value
+------------------------------------------------------------------------------
+ Z(t)             -2.483            -4.035            -3.448            -3.148
+------------------------------------------------------------------------------
+MacKinnon approximate p-value for Z(t) = 0.3367
+
+. dfuller lfpr, lags(4) trend 
+
+Augmented Dickey-Fuller test for unit root         Number of obs   =       115
+
+                               ---------- Interpolated Dickey-Fuller ---------
+                  Test         1% Critical       5% Critical      10% Critical
+               Statistic           Value             Value             Value
+------------------------------------------------------------------------------
+ Z(t)             -1.892            -4.035            -3.448            -3.148
+------------------------------------------------------------------------------
+MacKinnon approximate p-value for Z(t) = 0.6588
+
+. dfuller inv, lags(4) trend 
+
+Augmented Dickey-Fuller test for unit root         Number of obs   =       115
+
+                               ---------- Interpolated Dickey-Fuller ---------
+                  Test         1% Critical       5% Critical      10% Critical
+               Statistic           Value             Value             Value
+------------------------------------------------------------------------------
+ Z(t)             -5.124            -4.035            -3.448            -3.148
+------------------------------------------------------------------------------
+MacKinnon approximate p-value for Z(t) = 0.0001
+
+. dfuller prd, lags(4) trend 
+
+Augmented Dickey-Fuller test for unit root         Number of obs   =       115
+
+                               ---------- Interpolated Dickey-Fuller ---------
+                  Test         1% Critical       5% Critical      10% Critical
+               Statistic           Value             Value             Value
+------------------------------------------------------------------------------
+ Z(t)             -2.690            -4.035            -3.448            -3.148
+------------------------------------------------------------------------------
+MacKinnon approximate p-value for Z(t) = 0.2401
+
+. 
+. *Generating the variables for ΔX_t and ΔY_t (first differences)
+. gen drgdppc = D.rgdppc
+(1 missing value generated)
+
+. label variable drgdppc "1st diff in Real GDP Per Capita"
+
+. gen dlfpr = D.lfpr
+(1 missing value generated)
+
+. label variable dlfpr "1st diff in Labor Force Participation Rate"
+
+. gen dinv = D.inv
+(1 missing value generated)
+
+. label variable dinv "1st diff in Investment in Inventories"
+
+. gen dprd = D.prd
+(1 missing value generated)
+
+. label variable dprd "1st diff in Labor Productivity"
+
+. 
+. 
+. *ADF test in first differences (no trend)
+. dfuller drgdppc, lags(4)
+
+Augmented Dickey-Fuller test for unit root         Number of obs   =       114
+
+                               ---------- Interpolated Dickey-Fuller ---------
+                  Test         1% Critical       5% Critical      10% Critical
+               Statistic           Value             Value             Value
+------------------------------------------------------------------------------
+ Z(t)             -5.070            -3.505            -2.889            -2.579
+------------------------------------------------------------------------------
+MacKinnon approximate p-value for Z(t) = 0.0000
+
+. dfuller dlfpr, lags(4)
+
+Augmented Dickey-Fuller test for unit root         Number of obs   =       114
+
+                               ---------- Interpolated Dickey-Fuller ---------
+                  Test         1% Critical       5% Critical      10% Critical
+               Statistic           Value             Value             Value
+------------------------------------------------------------------------------
+ Z(t)             -5.974            -3.505            -2.889            -2.579
+------------------------------------------------------------------------------
+MacKinnon approximate p-value for Z(t) = 0.0000
+
+. dfuller dinv, lags(4)
+
+Augmented Dickey-Fuller test for unit root         Number of obs   =       114
+
+                               ---------- Interpolated Dickey-Fuller ---------
+                  Test         1% Critical       5% Critical      10% Critical
+               Statistic           Value             Value             Value
+------------------------------------------------------------------------------
+ Z(t)             -6.135            -3.505            -2.889            -2.579
+------------------------------------------------------------------------------
+MacKinnon approximate p-value for Z(t) = 0.0000
+
+. dfuller dprd, lags(4)
+
+Augmented Dickey-Fuller test for unit root         Number of obs   =       114
+
+                               ---------- Interpolated Dickey-Fuller ---------
+                  Test         1% Critical       5% Critical      10% Critical
+               Statistic           Value             Value             Value
+------------------------------------------------------------------------------
+ Z(t)             -5.731            -3.505            -2.889            -2.579
+------------------------------------------------------------------------------
+MacKinnon approximate p-value for Z(t) = 0.0000
+
+. 
+. 
+. *Plots of first differences over time
+. 
+. *Plot of ΔLFPR over time
+. tsline dlfpr, ///
+>     title("ΔLFPR over time") ///
+>     ytitle("ΔLFPR") ///
+>     xtitle("Time")
+
+. graph export "ΔLFPR.png", replace width(2000)
+(file ΔLFPR.png written in PNG format)
+
+. 
+. *Plot of ΔINV over time
+. tsline dinv, ///
+>     title("ΔINV over time") ///
+>     ytitle("ΔINV") ///
+>     xtitle("Time")
+
+. graph export "ΔINV.png", replace width(2000)
+(file ΔINV.png written in PNG format)
+
+. 
+. *Plot of ΔPRD over time
+. tsline dprd, ///
+>     title("ΔPRD over time") ///
+>     ytitle("ΔPRD") ///
+>     xtitle("Time")
+
+. graph export "ΔPRD.png", replace width(2000)
+(file ΔPRD.png written in PNG format)
+
+. 
+. *Plot of ΔRGDPPC over time
+. tsline drgdppc, ///
+>     title("ΔRGDPPC over time") ///
+>     ytitle("ΔRGDPPC") ///
+>     xtitle("Time")
+
+. graph export "ΔRGDPPC.png", replace width(2000)
+(file ΔRGDPPC.png written in PNG format)
+
+. 
+. ******************************************************
+. * STEP 4: COINTEGRATION CHECK (ONLY IF ALL ARE I(1))
+. ******************************************************
+. *Regressing Y_t on X_t to get residuals
+. reg rgdppc lfpr prd
+
+      Source |       SS           df       MS      Number of obs   =       120
+-------------+----------------------------------   F(2, 117)       =    699.71
+       Model |  2.7670e+09         2  1.3835e+09   Prob > F        =    0.0000
+    Residual |   231339923       117   1977264.3   R-squared       =    0.9228
+-------------+----------------------------------   Adj R-squared   =    0.9215
+       Total |  2.9983e+09       119  25196177.8   Root MSE        =    1406.2
+
+------------------------------------------------------------------------------
+      rgdppc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        lfpr |   1177.581   132.9399     8.86   0.000     914.2999    1440.861
+         prd |   531.9819   14.86358    35.79   0.000     502.5454    561.4184
+       _cons |  -73259.68   8828.454    -8.30   0.000    -90743.97   -55775.39
+------------------------------------------------------------------------------
+
+. *reg rgdppc lfpr inv prd
+. predict residual, res
+
+. 
+. *Running ADF test on the residuals
+. dfuller residual, noconstant lags(4) // there is cointegration between the three variables rgdppc 
+> lfpr and prd
+
+Augmented Dickey-Fuller test for unit root         Number of obs   =       115
+
+                               ---------- Interpolated Dickey-Fuller ---------
+                  Test         1% Critical       5% Critical      10% Critical
+               Statistic           Value             Value             Value
+------------------------------------------------------------------------------
+ Z(t)             -3.776            -2.598            -1.950            -1.611
+
+. 
+. *Plot of residuals over time
+. tsline residual, ///
+>     title("residuals over time") ///
+>     ytitle("Δu^t (residuals)") ///
+>     xtitle("Time")
+
+. graph export "Δu^t(residuals).png", replace width(2000)
+(file Δu^t(residuals).png written in PNG format)
+
+. 
+. 
+. ********************************************************************************
+. * STEP 5: REGRESSION OF Y ON X's WITH APPROPRIATE TRANSFORMATION (NEWEY-WEST) 
+. ********************************************************************************
+. *Newey–West HAC regression
+. newey drgdppc dlfpr inv dprd, lag(4) // All are I(1) except inv which is is I(0)
+
+Regression with Newey-West standard errors      Number of obs     =        119
+maximum lag: 4                                  F(  3,       115) =      51.15
+                                                Prob > F          =     0.0000
+
+------------------------------------------------------------------------------
+             |             Newey-West
+     drgdppc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       dlfpr |   1806.876   185.2764     9.75   0.000     1439.879    2173.873
+         inv |   .0072048   .0033953     2.12   0.036     .0004793    .0139302
+        dprd |   66.80061   64.77297     1.03   0.305    -61.50217    195.1034
+       _cons |   54.26785    61.1379     0.89   0.377    -66.83456    175.3703
+------------------------------------------------------------------------------
+
+. estimate store Newey
+
+. predict Y
+(option xb assumed; fitted values)
+(1 missing value generated)
+
+. 
+. * Plot actual vs fitted values
+. 
+. tsline drgdppc Y, ///
+>     title("Actual vs Fitted Values: ΔY_t") ///
+>     ytitle("ΔY_t") ///
+>     legend(order(1 "ΔY_t" 2 "Fitted ΔY_t"))
+
+. graph export "actual_vs_fitted.png", replace width(2000)
+(file actual_vs_fitted.png written in PNG format)
+
+. 
+. esttab Newey using "regression_results_term_paper.tex", replace label b(3)se(3) star(* 0.10 ** 0.0
+> 5 *** 0.01) booktabs title ("Regression Results") noomitted
+(output written to regression_results_term_paper.tex)
+
+. 
+. log close ECO475_TERM_PAPER
+      name:  ECO475_TERM_PAPER
+       log:  C:\Users\jaiswa40\Downloads\ECO475_term_paper.log
+  log type:  text
+ closed on:   4 Apr 2026, 16:50:02
+----------------------------------------------------------------------------------------------------
